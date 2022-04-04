@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import json
 from datetime import datetime
 import random
+import re
 
 
 warnings.filterwarnings('ignore')
@@ -58,7 +59,6 @@ with requests.Session() as session:
         nomeEmpresa = soup.find('h1', {"class":"fHibz"}).getText()
         avaliacoes = soup.find('span', {"class":"eBTWs"}).getText().split()[0]
         notaGeral = soup.find('span', {"class":"fdsdx"}).getText().split()[0]
-
         pontuacaoDosViajantes = soup.find_all('span', {"class":"row_num"})
         breakdownNotas = {
             '5':pontuacaoDosViajantes[0].getText(),
@@ -67,11 +67,23 @@ with requests.Session() as session:
             '2':pontuacaoDosViajantes[3].getText(),
             '1':pontuacaoDosViajantes[4].getText(),
         }
+        possuiAvaliacao = True
+        try:
+            msg = soup.find('div',{'class':'dqUEw'}).getText()
+            if 'não recebeu pontuações' in msg:
+                possuiAvaliacao = False
+        except:
+            pass
         # pontuacoes => comida | servico | preco
         pontuacoes = soup.find_all('span', {"class":"cwxUN"})
-        pontuacaoComida = pontuacoes[0].span['class'][1].split('_')[1]
-        pontuacaoServico = pontuacoes[1].span['class'][1].split('_')[1]
-        pontuacaoPreco = pontuacoes[2].span['class'][1].split('_')[1]
+        if possuiAvaliacao:
+            pontuacaoComida = pontuacoes[0].span['class'][1].split('_')[1]
+            pontuacaoServico = pontuacoes[1].span['class'][1].split('_')[1]
+            pontuacaoPreco = pontuacoes[2].span['class'][1].split('_')[1]
+        else:
+            pontuacaoComida = 'ainda não recebeu pontuações suficientes'
+            pontuacaoServico = 'ainda não recebeu pontuações suficientes'
+            pontuacaoPreco = 'ainda não recebeu pontuações suficientes'
 
         ranking = 'Nº ' + soup.find_all('a', {"class":"fhGHT"})[0].getText().split(' ')[1] + ' de ' + soup.find_all('a', {"class":"fhGHT"})[0].getText().split(' ')[3]
         localidadeRanking = soup.find_all('a', {"class":"fhGHT"})[0].getText().split('em')[1].strip()
