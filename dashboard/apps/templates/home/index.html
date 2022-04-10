@@ -1,0 +1,151 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Dashboard {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-10">
+            <h6 class="h2 text-white d-inline-block mb-0">Resultados possíveis</h6>
+          </div>
+          <div class="col-2">
+            <button type="button" id="buscar-review" class="btn btn-success btn-lg">BUSCAR REVIEWS</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          {% csrf_token %}
+          <!-- Light table -->
+          <div class="table-responsive">
+            <table class="table align-items-center table-flush">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col" class="sort" data-sort="name">Tripadvisor</th>
+                  <th scope="col" class="sort" data-sort="budget">Reclame aqui</th>
+                  <th scope="col" class="sort" data-sort="status">Google Reviews</th>
+                  <th scope="col" class="sort" data-sort="status">Ifood</th>
+                </tr>
+              </thead>
+              <tbody class="list">
+                {% for u in results %}
+                <tr>
+                  <td class="tripadvisor">
+                    <div class="form-check">
+                      <input  class="tripadvisor form-check-input" type="checkbox" value="" id="{{ u.url }}">
+                      <label class="form-check-label" for="flexCheckDefault">
+                        <strong>{{ u.name }}</strong><br/>
+                        <span style="font-size: 10px">{{ u.address }}</span>
+                      </label>
+                    </div>
+                  </td>
+                  <td class="reclameaqui">
+                    -
+                  </td>
+                  <td class="googlereviews">
+                    -
+                  </td>
+                  <td class="ifood">
+                    -
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+  <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
+  <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
+  <script>
+    function busca(){
+      var query = $('#input-busca').val()
+      window.location.href='/?query='+query
+    }
+    $('#input-busca').keypress(function(event){
+      var keycode = (event.keyCode ? event.keyCode : event.which);
+      if(keycode == '13'){
+        busca()
+      }
+    });
+
+    $('#buscar-review').on('click', function () {
+      var urlTrivadisor=[]
+      $("input.tripadvisor").each(
+          function(){
+            if ($(this).is(':checked')){
+              console.log($(this).attr("id"))
+              urlTrivadisor.push($(this).attr("id"))
+            }
+          }
+      );
+      Swal.fire(
+        {
+          icon: 'warning',
+          title: 'Aguarde... A rotina está sendo executada.',
+          showConfirmButton: false,
+        }
+      )
+      var form_data = new FormData();
+
+      csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+      
+      form_data.append("csrfmiddlewaretoken", csrf_token);
+      form_data.append("urlTrivadisor", urlTrivadisor.join(';'));
+      
+      $.ajax({
+        url: 'buscar_review', 
+        dataType: 'json', 
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,
+        type: 'POST',
+        success: function (response) { 
+          window.location.href="/baixar_excel?name="+response['name']
+          console.log("/baixar_excel?name="+response['name'])
+          Swal.fire(
+          {
+            icon: 'success',
+            title: 'Rotina executada com sucesso',
+            showConfirmButton: false,
+          }
+        )
+        },
+        error: function (response) {
+          Swal.fire(
+            'Erro na execução',
+            'Ocorreu um erro na execução da rotina.',
+            'error'
+          )
+        }
+      });
+    });
+
+    $('#bt-search').on('click', function(){
+      busca()
+    })
+  </script>
+
+{% endblock javascripts %}

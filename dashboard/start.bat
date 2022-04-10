@@ -1,0 +1,6 @@
+echo off
+cls
+echo Iniciando bot...
+pip install -r requirements.txt & start chrome http://127.0.0.1:7000 & python manage.py runserver 7000
+ 
+echo Bot iniciado...
