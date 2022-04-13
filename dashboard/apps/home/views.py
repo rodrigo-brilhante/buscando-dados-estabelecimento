@@ -32,12 +32,13 @@ def index(request):
     html_template = loader.get_template("home/index.html")
     return HttpResponse(html_template.render(context, request))
 
-@login_required(login_url="/login/")
-def detalhes(dados):
-    context = {"segment": "index", "results":[dados]}
-  
-    html_template = loader.get_template("home/index.html")
-    return HttpResponse(html_template.render(context))
+# @login_required(login_url="/login/")
+# def detalhes(request):
+#     context = {"segment": "index", "results":[]}
+#     dados=request.GET["dados"]
+#     context["dados"]=dados
+#     html_template = loader.get_template("home/detalhes.html")
+#     return HttpResponse(html_template.render(context))
 
 @login_required(login_url="/login/")
 def pages(request):
@@ -45,7 +46,6 @@ def pages(request):
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
     try:
-
         load_template = request.path.split("/")[-1]
 
         if load_template == "admin":
@@ -165,38 +165,63 @@ def buscarIfood(query):
         for result in results:
             try:
                 if result["name"] and result["slug"]:
+                    result["url"] = result["slug"] + "/" + result["id"]
                     retorno.append(result)
             except:
                 pass
         return retorno
 
 def buscar_review(request):
+    context = {"segment": "index", "dados":[]}
+
     if request.method == "POST":
         tripadvisor=Tripadvisor()
         google=Google()
         ifood=Ifood()
         reclameAqui=ReclameAqui()
 
-        urls=request.POST["urlTrivadisor"].split(";")
+        urlsTrip=request.POST["urlTrivadisor"].split(";")
+        urlsReclame=request.POST["urlsReclame"].split(";")
+        urlsGoogle=request.POST["urlsGoogle"].split(";")
+        urlsIfood=request.POST["urlsIfood"].split(";")
+        # print()
+        # print(urlsTrip)
+        # print()
+        # print(urlsReclame)
+        # print()
+        # print(urlsGoogle)
+        # print()
+        # print(urlsIfood)
+        
         dados=[]
-        for url in urls:
-            dadoTripadvisor=tripadvisor.get("https://www.tripadvisor.com.br/"+url)
-            
-            nomeEmpresa = "coco bambu"
-            dadoReclameAqui=reclameAqui.get(nomeEmpresa)
-            nomeEmpresa = "big burger"
-            dadoGoogle=google.get(nomeEmpresa)
 
-            dadosIfood=ifood.get("https://www.ifood.com.br/delivery/santo-andre-sp/coco-bambu---santo-andre-centro/638adfdb-fc41-4f64-9b81-6f8ccbe53702")
-            
-            dados.append({
-                "tripadvisor":dadoTripadvisor,
-                "reclameAqui":dadoReclameAqui,
-                "google":dadoGoogle,
-                "ifood":dadosIfood
-            })
-        name=gerar_excel(dados)
-        return JsonResponse({"name":name})
+        for url in urlsTrip:
+            if url != '':
+                dadoTripadvisor=tripadvisor.get("https://www.tripadvisor.com.br/"+url)
+        # for nomeEmpresa in urlsReclame:
+            # if nomeEmpresa != '':
+        #     dadoReclameAqui=reclameAqui.get(nomeEmpresa)
+
+        # for nomeEmpresa in urlsGoogle:
+        # if nomeEmpresa != '':
+        #     dadoGoogle=google.get(nomeEmpresa)
+
+        # for url in urlsIfood:
+        # if url != '':
+        #     dadosIfood=ifood.get("https://www.ifood.com.br/delivery/"+url)
+
+        dados.append({
+            "tripadvisor":dadoTripadvisor,
+            # "reclameAqui":dadoReclameAqui,
+            # "google":dadoGoogle,
+            # "ifood":dadosIfood
+        })
+        # name=gerar_excel(dados)
+        # return JsonResponse({"name":name})
+        context["dados"]=dados
+        print(context)
+        html_template = loader.get_template("home/detalhes.html")
+        return HttpResponse(html_template.render(context))
 
 def gerar_excel(dados):
     

@@ -68,7 +68,7 @@
             <tbody class="list">
               {% for u in resultsReclame %}
               <tr>
-                <td class="reclameaqui">
+                <td class="reclameAqui">
                   <div class="form-check">
                     <input class="reclameAqui form-check-input" type="checkbox" value="" id="{{ u.shortname }}">
                     <label class="form-check-label" for="flexCheckDefault">
@@ -97,7 +97,7 @@
             <tbody class="list">
               {% for u in resultsTripadvisor %}
               <tr>
-                <td class="googlereviews">
+                <td class="google">
                   <div class="form-check">
                     <input class="google form-check-input" type="checkbox" value="" id="{{ u.name }}">
                     <label class="form-check-label" for="flexCheckDefault">
@@ -128,7 +128,7 @@
               <tr>
                 <td class="ifood">
                   <div class="form-check">
-                    <input class="ifood form-check-input" type="checkbox" value="" id="{{ u.slug }}">
+                    <input class="ifood form-check-input" type="checkbox" value="" id="{{ u.url }}">
                     <label class="form-check-label" for="flexCheckDefault">
                       <strong>{{ u.name }}</strong><br />
                       <!-- <span style="font-size: 10px">{{ u.address }}</span> -->
@@ -166,11 +166,38 @@
 
   $('#buscar-review').on('click', function () {
     var urlTrivadisor = []
+    var urlsReclame = []
+    var urlsGoogle = []
+    var urlsIfood = []
     $("input.tripadvisor").each(
       function () {
         if ($(this).is(':checked')) {
           console.log($(this).attr("id"))
           urlTrivadisor.push($(this).attr("id"))
+        }
+      }
+    );
+    $("input.reclameAqui").each(
+      function () {
+        if ($(this).is(':checked')) {
+          console.log($(this).attr("id"))
+          urlsReclame.push($(this).attr("id"))
+        }
+      }
+    );
+    $("input.google").each(
+      function () {
+        if ($(this).is(':checked')) {
+          console.log($(this).attr("id"))
+          urlsGoogle.push($(this).attr("id"))
+        }
+      }
+    );
+    $("input.ifood").each(
+      function () {
+        if ($(this).is(':checked')) {
+          console.log($(this).attr("id"))
+          urlsIfood.push($(this).attr("id"))
         }
       }
     );
@@ -187,6 +214,9 @@
 
     form_data.append("csrfmiddlewaretoken", csrf_token);
     form_data.append("urlTrivadisor", urlTrivadisor.join(';'));
+    form_data.append("urlsReclame", urlsReclame.join(';'));
+    form_data.append("urlsGoogle", urlsGoogle.join(';'));
+    form_data.append("urlsIfood", urlsIfood.join(';'));
 
     $.ajax({
       url: 'buscar_review',
