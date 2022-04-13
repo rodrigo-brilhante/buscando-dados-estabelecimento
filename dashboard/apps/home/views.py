@@ -13,20 +13,31 @@ import requests
 from requests.structures import CaseInsensitiveDict
 import pandas as pd
 from apps.home.tripadvisor import Tripadvisor
+from apps.home.google import Google
+from apps.home.reclame_aqui import ReclameAqui
+from apps.home.ifood import Ifood
 import os
 import uuid
 
 @login_required(login_url="/login/")
 def index(request):
-    context = {'segment': 'index', 'results':[]}
+    context = {"segment": "index", "resultsTripadvisor":[], "resultsGoogle":[], "resultsIfood":[], "resultsReclame":[]}
     try:
-        if request.GET['query']:
-            context["results"]=buscar(request.GET['query'])
+        if request.GET["query"]:
+            context["resultsTripadvisor"]=buscarTripadivisor(request.GET["query"])
+            context["resultsReclame"]=buscarReclame(request.GET["query"])
+            context["resultsGoogle"]=context["resultsTripadvisor"]
     except:
         pass
-    html_template = loader.get_template('home/index.html')
+    html_template = loader.get_template("home/index.html")
     return HttpResponse(html_template.render(context, request))
 
+@login_required(login_url="/login/")
+def detalhes(dados):
+    context = {"segment": "index", "results":[dados]}
+  
+    html_template = loader.get_template("home/index.html")
+    return HttpResponse(html_template.render(context))
 
 @login_required(login_url="/login/")
 def pages(request):
@@ -35,31 +46,31 @@ def pages(request):
     # Pick out the html file name from the url. And load that template.
     try:
 
-        load_template = request.path.split('/')[-1]
+        load_template = request.path.split("/")[-1]
 
-        if load_template == 'admin':
-            return HttpResponseRedirect(reverse('admin:index'))
-        context['segment'] = load_template
+        if load_template == "admin":
+            return HttpResponseRedirect(reverse("admin:index"))
+        context["segment"] = load_template
 
-        html_template = loader.get_template('home/' + load_template)
+        html_template = loader.get_template("home/" + load_template)
         return HttpResponse(html_template.render(context, request))
 
     except template.TemplateDoesNotExist:
 
-        html_template = loader.get_template('home/page-404.html')
+        html_template = loader.get_template("home/page-404.html")
         return HttpResponse(html_template.render(context, request))
 
     except:
-        html_template = loader.get_template('home/page-500.html')
+        html_template = loader.get_template("home/page-500.html")
         return HttpResponse(html_template.render(context, request))
 
 @login_required(login_url="/login/")
 def busca_estabelecimento(request):
-    context = {'results':buscar(request.GET['query'])}
+    context = {"results":buscar(request.GET["query"])}
     return JsonResponse(context)
 
-def buscar(query):
-        query=query.replace(' ', '%20')
+def buscarTripadivisor(query):
+        query=query.replace(" ", "%20")
         url = f"https://www.tripadvisor.com.br/TypeAheadJson?interleaved=true&geoPages=true&details=true&types=geo%2Chotel%2Ceat%2Cattr%2Cvr%2Cair%2Ctheme_park%2Cal%2Cact%2Ccar%2Cship&neighborhood_geos=true&link_type=geo&matchTags=true&matchGlobalTags=true&matchKeywords=true&matchOverview=true&matchUserProfiles=true&strictAnd=false&scoreThreshold=0.8&hglt=true&disableMaxGroupSize=true&max=10&injectNewLocation=true&injectLists=true&nearby=true&local=true&parentids=&scope=-1&beforeGeoId=1&afterGeoId=&typeahead1_5=true&geoBoostFix=true&nearPages=true&nearPagesLevel=strict&rescue=true&supportedSearchTypes=find_near_stand_alone_query&query={query}&action=API&uiOrigin=MASTHEAD&source=MASTHEAD&startTime=1648321771073&searchSessionId=38AECBC29612816DA58451FF580D70F41648320967965ssid"
 
         headers = CaseInsensitiveDict()
@@ -79,111 +90,371 @@ def buscar(query):
         headers["cookie"] = "TADCID=br9ffQsJmqNnVl73ABQCFdpBzzOuRA-9xvCxaMyI12xqbmSZP4sOMygn2VxM3onKTN7n0ENcBvGT-6p2eEkrnT0XOG0IcLgXWAQ; TAUnique=%1%enc%3AE4zfPo0JW7GLVSZ%2Fu4S8bLmY3%2Fp0SOalVAYNOY1akLiF5oaXDAQCIA%3D%3D; __vt=bbXKiKwqHU5j3jQwABQCIf6-ytF7QiW7ovfhqc-AvRxIDr_No6IT2WMb6LUP4lyOyKimsZRG59IkmdZuQ0Z4lNg1zUz4qw5YuQrpuvNmFr7B_VbbOCG5uLor010NVlgxDqSdzzqe9hQVNHpTgc9L8xxSUA; SRT=TART_SYNC; TART=%1%enc%3Ai1Umf7uEvGzSsPzX7Pg6%2FharGJxjLv%2BhSQ%2BXt6GNZ%2BjsBgZKnBoAuXmJfeY3MT%2BAdQVMXpN2Oqc%3D; TASID=EFD65EC550F44A05BFE1440F1B09A598; ak_bmsc=A24C0AD656FB448EB68602AE36919C50~000000000000000000000000000000~YAAQRhc2F+XQjZt/AQAA3DCmxw8uEgNfG4/nD0UFgqUU++Vto2lu+84Qw4oghxdTyoj7krRtLDRqu3378M/XgYgXbqafthBMWSBnHvuVe9L2A+tT4P5DZbp/ke15xu//cC588xZX7d5Yux5pRHqpetf2grn5Kh4EP2i/CJezXvZV+e1eneubJSNNjfSP5yGCuUwBZOSgfwXVgQZfxiIh07XBHdvK/1SM25LfZDcsNlaSGL+9UI+WMmnCqrqQ5R4FT5R7QEYwdWzcgF9OXBRSkXJY7r0uZtakJizu8V175CeCkNprOAceSoPmCRbORDTV9kAWQfkAf1nRm5yaPOd0MMtb9Pssv+ZvTo6P65aWjZ1TxtxMNU0QIkE7bQzBpIPDPYQib44PfTQ1ur18o2MVks0G"
 
         resp = requests.get(url, headers=headers)
-        results=resp.json()['results']
+        results=resp.json()["results"]
         retorno=[]
         for result in results:
             try:
-                if 'Todos os resultados para' not in result['name']:
-                    if result['name'] and result['address']:
+                if "Todos os resultados para" not in result["name"]:
+                    if result["name"] and result["address"]:
                         retorno.append(result)
             except:
                 pass
         return retorno
 
+def buscarReclame(query):
+        query=query.replace(" ", "%20")
+        url = f"https://iosearch.reclameaqui.com.br/raichu-io-site-search-v1/companies/search/{query}"
+
+        headers = CaseInsensitiveDict()
+        headers["Connection"] = "keep-alive"
+        headers["sec-ch-ua"] = '" Not A;Brand";v="99", "Chromium";v="99", "Google Chrome";v="99"'
+        headers["Accept"] = "application/json, text/plain, */*"
+        headers["sec-ch-ua-mobile"] = "?0"
+        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36"
+        headers["sec-ch-ua-platform"] = '"Windows"'
+        headers["Origin"] = "https://www.reclameaqui.com.br"
+        headers["Sec-Fetch-Site"] = "same-site"
+        headers["Sec-Fetch-Mode"] = "cors"
+        headers["Sec-Fetch-Dest"] = "empty"
+        headers["Referer"] = "https://www.reclameaqui.com.br/"
+        headers["Accept-Language"] = "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
+
+        resp = requests.get(url, headers=headers)
+        results=resp.json()["companies"]
+        retorno=[]
+        for result in results:
+            try:
+                if result["companyName"] and result["shortname"]:
+                    retorno.append(result)
+            except:
+                pass
+        return retorno
+
+
 def buscar_review(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         tripadvisor=Tripadvisor()
-        urls=request.POST['urlTrivadisor'].split(';')
+        google=Google()
+        ifood=Ifood()
+        reclameAqui=ReclameAqui()
+
+        urls=request.POST["urlTrivadisor"].split(";")
         dados=[]
         for url in urls:
-            dado=tripadvisor.get('https://www.tripadvisor.com.br/'+url)
-            dados.append(dado)
+            dadoTripadvisor=tripadvisor.get("https://www.tripadvisor.com.br/"+url)
+            
+            nomeEmpresa = "coco bambu"
+            dadoReclameAqui=reclameAqui.get(nomeEmpresa)
+            nomeEmpresa = "big burger"
+            dadoGoogle=google.get(nomeEmpresa)
+
+            dadosIfood=ifood.get("https://www.ifood.com.br/delivery/santo-andre-sp/coco-bambu---santo-andre-centro/638adfdb-fc41-4f64-9b81-6f8ccbe53702")
+            
+            dados.append({
+                "tripadvisor":dadoTripadvisor,
+                "reclameAqui":dadoReclameAqui,
+                "google":dadoGoogle,
+                "ifood":dadosIfood
+            })
         name=gerar_excel(dados)
-        return JsonResponse({'name':name})
+        return JsonResponse({"name":name})
 
 def gerar_excel(dados):
     
-    notas=[]
-    reviews=[]
+    notasTripadvisor=[]
+    reviewsTripadvisor=[]
+    notasReclameAqui=[]
+    reviewsReclameAqui=[]
+    notasGoogle=[]
+    reviewsGoogle=[]
+    notasIfood=[]
+    reviewsIfood=[]
     for dado in dados:
+        # extraindo dados Tripadvisor
         try:
-            nota=dado['notas']
-            for r in dado['reviews']:
-                reviews.append({
-                    'local': r['local'],
-                    'review':r['review'],
-                    'nota': r['nota'],
-                    'dataReview': r['dataReview'],
-                    'cidadeLocal': r['cidadeLocal']
+            nota=dado["tripadvisor"]["notas"]
+            for r in dado["tripadvisor"]["reviews"]:
+                reviewsTripadvisor.append({
+                    "local": r["local"],
+                    "review":r["review"],
+                    "nota": r["nota"],
+                    "dataReview": r["dataReview"],
+                    "cidadeLocal": r["cidadeLocal"]
                 })
-            notas.append({
-                'cidade': nota['cidade'],
-                'endereco': nota['endereco'],
-                'localidadeRanking': nota['localidadeRanking'],
-                'nome': nota['nome'],
-                'notaGeral': nota['notaGeral'],
-                'numeroAvaliacoes': nota['numeroAvaliacoes'],
-                'pontuacaoComida': nota['pontuacaoComida'],
-                'pontuacaoPreco': nota['pontuacaoPreco'],
-                'pontuacaoServico': nota['pontuacaoServico'],
-                'ranking': nota['ranking'],
-                'telefone': nota['telefone'],
-                'breakdown_nota_1': nota['breakdownNotas']['nota_1'],
-                'breakdown_nota_2': nota['breakdownNotas']['nota_2'],
-                'breakdown_nota_3': nota['breakdownNotas']['nota_3'],
-                'breakdown_nota_4': nota['breakdownNotas']['nota_4'],
-                'breakdown_nota_5': nota['breakdownNotas']['nota_5'],
+            notasTripadvisor.append({
+                "cidade": nota["cidade"],
+                "endereco": nota["endereco"],
+                "localidadeRanking": nota["localidadeRanking"],
+                "nome": nota["nome"],
+                "notaGeral": nota["notaGeral"],
+                "numeroAvaliacoes": nota["numeroAvaliacoes"],
+                "pontuacaoComida": nota["pontuacaoComida"],
+                "pontuacaoPreco": nota["pontuacaoPreco"],
+                "pontuacaoServico": nota["pontuacaoServico"],
+                "ranking": nota["ranking"],
+                "telefone": nota["telefone"],
+                "breakdown_nota_1": nota["breakdownNotas"]["nota_1"],
+                "breakdown_nota_2": nota["breakdownNotas"]["nota_2"],
+                "breakdown_nota_3": nota["breakdownNotas"]["nota_3"],
+                "breakdown_nota_4": nota["breakdownNotas"]["nota_4"],
+                "breakdown_nota_5": nota["breakdownNotas"]["nota_5"],
             })
         except:
             pass
-    
-    data={
-        "Nome": [str(x['nome']) for x in notas], 
-        "# de Avaliações": [str(x['numeroAvaliacoes']) for x in notas], 
-        "Nota Geral": [str(x['notaGeral']) for x in notas],
-        "5": [str(x['breakdown_nota_5']) for x in notas],
-        "4": [str(x['breakdown_nota_4']) for x in notas],
-        "3": [str(x['breakdown_nota_3']) for x in notas],
-        "2": [str(x['breakdown_nota_2']) for x in notas],
-        "1": [str(x['breakdown_nota_1']) for x in notas],
-        "Pontuação Comida": [str(x['pontuacaoComida']) for x in notas], 
-        "Pontuação Serviço": [str(x['pontuacaoServico']) for x in notas],
-        "Pontuação Preço": [str(x['pontuacaoPreco']) for x in notas],
-        "Ranking": [str(x['ranking']) for x in notas], 
-        "Localidade do Ranking": [str(x['localidadeRanking']) for x in notas], 
-        "Cidade": [str(x['cidade']) for x in notas],
-        "Endereço": [str(x['endereco']) for x in notas], 
-        "Telefone": [str(x['telefone']) for x in notas]
+
+        # extraindo dados Reclame Aqui
+        try:
+            nota=dado["reclameAqui"]
+            for r in dado["reclameAqui"]["reviews"]:
+                reviewsReclameAqui.append({
+                    "nomeLocal": r["nomeLocal"],
+                    "tituloReview":r["tituloReview"],
+                    "review": r["review"],
+                    "data": r["data"],
+                    "status": r["status"],
+                })
+            notasReclameAqui.append({
+                "nomeLocal": nota["nomeDoLocal"],
+                
+                "pontuacaoFinalGeral":nota["avaliacaoes"][4]["pontuacaoFinal"],
+                "percentualRespondidoGeral":nota["avaliacaoes"][4]["percentualRespondido"],
+                "percentualVoltariamAfazerNegocioGeral":nota["avaliacaoes"][4]["percentualVoltariamAfazerNegocio"],
+                "percentualResolvidoGeral":nota["avaliacaoes"][4]["percentualResolvido"],
+                "totalReclamacoesGeral":nota["avaliacaoes"][4]["totalReclamacoes"],
+                
+                "pontuacaoFinal6meses":nota["avaliacaoes"][0]["pontuacaoFinal"],
+                "percentualRespondido6meses":nota["avaliacaoes"][0]["percentualRespondido"],
+                "percentualVoltariamAfazerNegocio6meses":nota["avaliacaoes"][0]["percentualVoltariamAfazerNegocio"],
+                "percentualResolvido6meses":nota["avaliacaoes"][0]["percentualResolvido"],
+                "totalReclamacoes6meses":nota["avaliacaoes"][0]["totalReclamacoes"],
+                
+                "pontuacaoFinal12meses":nota["avaliacaoes"][1]["pontuacaoFinal"],
+                "percentualRespondido12meses":nota["avaliacaoes"][1]["percentualRespondido"],
+                "percentualVoltariamAfazerNegocio12meses":nota["avaliacaoes"][1]["percentualVoltariamAfazerNegocio"],
+                "percentualResolvido12meses":nota["avaliacaoes"][1]["percentualResolvido"],
+                "totalReclamacoes12meses":nota["avaliacaoes"][1]["totalReclamacoes"],
+                
+                "pontuacaoFinal1ano":nota["avaliacaoes"][2]["pontuacaoFinal"],
+                "percentualRespondido1ano":nota["avaliacaoes"][2]["percentualRespondido"],
+                "percentualVoltariamAfazerNegocio1ano":nota["avaliacaoes"][2]["percentualVoltariamAfazerNegocio"],
+                "percentualResolvido1ano":nota["avaliacaoes"][2]["percentualResolvido"],
+                "totalReclamacoes1ano":nota["avaliacaoes"][2]["totalReclamacoes"],
+                
+                "pontuacaoFinal2ano":nota["avaliacaoes"][3]["pontuacaoFinal"],
+                "percentualRespondido2ano":nota["avaliacaoes"][3]["percentualRespondido"],
+                "percentualVoltariamAfazerNegocio2ano":nota["avaliacaoes"][3]["percentualVoltariamAfazerNegocio"],
+                "percentualResolvido2ano":nota["avaliacaoes"][3]["percentualResolvido"],
+                "totalReclamacoes2ano":nota["avaliacaoes"][3]["totalReclamacoes"],
+                
+                "problema1porcentagem":nota["problemas"]["problema1"]["porcentagem"],
+                "problema1motivo":nota["problemas"]["problema1"]["motivo"],
+                
+                "problema2porcentagem":nota["problemas"]["problema2"]["porcentagem"],
+                "problema2motivo":nota["problemas"]["problema2"]["motivo"],
+                
+                "problema3porcentagem":nota["problemas"]["problema3"]["porcentagem"],
+                "problema3motivo":nota["problemas"]["problema3"]["motivo"],
+            })
+        except:
+            pass
+        # Fim Reclame Aqui
+
+        # extraindo dados google
+        try:
+            nota=dado["google"]
+            for r in dado["google"]["reviews"]:
+                reviewsGoogle.append({
+                    "nomeUsuario": r["nomeUsuario"],
+                    "notaReview": r["notaReview"],
+                    "dataReview": r["dataReview"],
+                    "review": r["review"],
+                })
+            notasGoogle.append({
+                "nomeLocal": nota["nomeLocal"],
+                "nota": nota["nota"],
+                "numeroAvaliacoes":nota["numeroAvaliacoes"],
+                "endereco": nota["endereco"],
+                "cidade": nota["cidade"],
+                "estado": nota["estado"]
+            })
+        except:
+            pass
+        # fim google
+
+    #     # extraindo dados ifood
+        try:
+            nota=dado["ifood"]
+            for r in dado["ifood"]["reviews"]:
+                reviewsIfood.append({
+                    "nomeLocal": r["nomeLocal"],
+                    "review": r["review"],
+                    "notaReview":r["notaReview"],
+                    "dataReview": r["dataReview"],
+                    "nomeUsuario": r["nomeUsuario"],
+                })
+            notasIfood.append({
+                "nomeLocal": nota["nomeLocal"],
+                "nota": nota["nota"],
+                "numeroAvaliacoes": nota["numeroAvaliacoes"],
+                "endereco": nota["endereco"][0],
+                "cnpj": nota["cnpj"],
+            })
+        except:
+            pass
+        # fim ifodod
+
+    # organizando os dados Tripadvisor
+    dataTripadvisor={
+        "Nome": [str(x["nome"]) for x in notasTripadvisor], 
+        "# de Avaliações": [str(x["numeroAvaliacoes"]) for x in notasTripadvisor], 
+        "Nota Geral": [str(x["notaGeral"]) for x in notasTripadvisor],
+        "5": [str(x["breakdown_nota_5"]) for x in notasTripadvisor],
+        "4": [str(x["breakdown_nota_4"]) for x in notasTripadvisor],
+        "3": [str(x["breakdown_nota_3"]) for x in notasTripadvisor],
+        "2": [str(x["breakdown_nota_2"]) for x in notasTripadvisor],
+        "1": [str(x["breakdown_nota_1"]) for x in notasTripadvisor],
+        "Pontuação Comida": [str(x["pontuacaoComida"]) for x in notasTripadvisor], 
+        "Pontuação Serviço": [str(x["pontuacaoServico"]) for x in notasTripadvisor],
+        "Pontuação Preço": [str(x["pontuacaoPreco"]) for x in notasTripadvisor],
+        "Ranking": [str(x["ranking"]) for x in notasTripadvisor], 
+        "Localidade do Ranking": [str(x["localidadeRanking"]) for x in notasTripadvisor], 
+        "Cidade": [str(x["cidade"]) for x in notasTripadvisor],
+        "Endereço": [str(x["endereco"]) for x in notasTripadvisor], 
+        "Telefone": [str(x["telefone"]) for x in notasTripadvisor]
     }
 
-    df1 = pd.DataFrame(data, columns = ["Nome", "# de Avaliações", 
+    df1 = pd.DataFrame(dataTripadvisor, columns = ["Nome", "# de Avaliações", 
     "Nota Geral","5","4","3","2","1",
     "Pontuação Comida", "Pontuação Serviço","Pontuação Preço",
     "Ranking", "Localidade do Ranking", "Cidade",
     "Endereço", "Telefone"])
 
-    data={
-        "Local": [str(x['local']) for x in reviews], 
-        "Review": [str(x['review']) for x in reviews], 
-        "Nota": [str(x['nota']) for x in reviews],
-        "Data Review": [str(x['dataReview']) for x in reviews],
-        "Cidade do Local": [str(x['cidadeLocal']) for x in reviews],
+    dataTripadvisor={
+        "Local": [str(x["local"]) for x in reviewsTripadvisor], 
+        "Review": [str(x["review"]) for x in reviewsTripadvisor], 
+        "Nota": [str(x["nota"]) for x in reviewsTripadvisor],
+        "Data Review": [str(x["dataReview"]) for x in reviewsTripadvisor],
+        "Cidade do Local": [str(x["cidadeLocal"]) for x in reviewsTripadvisor],
     }
 
-    df2 = pd.DataFrame(data, columns=["Local", "Review", "Nota", "Data Review", "Cidade do Local"])  
+    df2 = pd.DataFrame(dataTripadvisor, columns=["Local", "Review", "Nota", "Data Review", "Cidade do Local"])  
+    # fim Tripadvisor
 
-    name = uuid.uuid4().hex+'.xlsx'
-    with pd.ExcelWriter('media/tmp-'+name) as writer:
+    # organizando os dados Reclame Aqui
+    dataReclameAqui={
+    "Nome do Local":[str(x["nomeLocal"]) for x in notasReclameAqui], 
+    
+    "Nota Geral":[str(x["pontuacaoFinalGeral"]) for x in notasReclameAqui], 
+    "% Respondidas":[str(x["percentualRespondidoGeral"]) for x in notasReclameAqui],
+    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocioGeral"]) for x in notasReclameAqui], 
+    "Índice Solução":[str(x["percentualResolvidoGeral"]) for x in notasReclameAqui], 
+    "# Reclamações":[str(x["totalReclamacoesGeral"]) for x in notasReclameAqui], 
+
+    "Nota 6 Meses":[str(x["pontuacaoFinal6meses"]) for x in notasReclameAqui], 
+    "% Respondidas":[str(x["percentualRespondido6meses"]) for x in notasReclameAqui], 
+    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio6meses"]) for x in notasReclameAqui], 
+    "Índice Solução":[str(x["percentualResolvido6meses"]) for x in notasReclameAqui], 
+    "# Reclamações":[str(x["totalReclamacoes6meses"]) for x in notasReclameAqui], 
+    
+    "Nota 12 Meses":[str(x["pontuacaoFinal12meses"]) for x in notasReclameAqui], 
+    "% Respondidas":[str(x["percentualRespondido12meses"]) for x in notasReclameAqui], 
+    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio12meses"]) for x in notasReclameAqui], 
+    "Índice Solução":[str(x["percentualResolvido12meses"]) for x in notasReclameAqui], 
+    "# Reclamações":[str(x["totalReclamacoes12meses"]) for x in notasReclameAqui], 
+    
+    "Nota Ano -1":[str(x["pontuacaoFinal1ano"]) for x in notasReclameAqui], 
+    "% Respondidas":[str(x["percentualRespondido1ano"]) for x in notasReclameAqui], 
+    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio1ano"]) for x in notasReclameAqui], 
+    "Índice Solução":[str(x["percentualResolvido1ano"]) for x in notasReclameAqui], 
+    "# Reclamações":[str(x["totalReclamacoes1ano"]) for x in notasReclameAqui], 
+
+    "Nota Ano -2":[str(x["pontuacaoFinal2ano"]) for x in notasReclameAqui], 
+    "% Respondidas":[str(x["percentualRespondido2ano"]) for x in notasReclameAqui], 
+    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio2ano"]) for x in notasReclameAqui], 
+    "Índice Solução":[str(x["percentualResolvido2ano"]) for x in notasReclameAqui], 
+    "# Reclamações":[str(x["totalReclamacoes2ano"]) for x in notasReclameAqui], 
+   
+    "%":[str(x["problema1porcentagem"]) for x in notasReclameAqui],
+    "Motivo":[str(x["problema1motivo"]) for x in notasReclameAqui],
+    
+    "%":[str(x["problema2porcentagem"]) for x in notasReclameAqui],
+    "Motivo":[str(x["problema2motivo"]) for x in notasReclameAqui],
+    
+    "%":[str(x["problema3porcentagem"]) for x in notasReclameAqui],
+    "Motivo":[str(x["problema3motivo"]) for x in notasReclameAqui],
+    }
+    df3 = pd.DataFrame(dataReclameAqui, columns=["Nome do Local", "Nota Geral", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota 6 Meses", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota 12 Meses", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota Ano -1", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota Ano -2", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "%", "Motivo", "%", "Motivo", "%", "Motivo"])  
+
+    dataReclameAqui={ 
+        "Nome do Local":[str(x["nomeLocal"]) for x in reviewsReclameAqui], 
+        "Título do Review":[str(x["tituloReview"]) for x in reviewsReclameAqui], 
+        "Review":[str(x["review"]) for x in reviewsReclameAqui], 
+        "Data":[str(x["data"]) for x in reviewsReclameAqui], 
+        "Status":[str(x["status"]) for x in reviewsReclameAqui]
+    }
+    df4 = pd.DataFrame(dataReclameAqui, columns=["Nome do Local", "Título do Review", "Review", "Data", "Status"])  
+    # fim Reclame Aqui
+
+    # organizando os dados Google
+    dataGoogle={
+        "Nome do Local": [str(x["nomeLocal"]) for x in notasGoogle], 
+        "Nota": [str(x["nota"]) for x in notasGoogle], 
+        "# de Avaliações": [str(x["numeroAvaliacoes"]) for x in notasGoogle],
+        "Endereço": [str(x["endereco"]) for x in notasGoogle],
+        "Cidade": [str(x["cidade"]) for x in notasGoogle],
+        "Estado": [str(x["estado"]) for x in notasGoogle],
+    }
+    print(dataGoogle)
+    df5 = pd.DataFrame(dataGoogle, columns = ["Nome do Local", "Nota", "# de Avaliações", "Endereço", "Cidade", "Estado"])
+
+    dataGoogle={
+        "Nome do Local": [str(x["nomeUsuario"]) for x in reviewsGoogle], 
+        "Review": [str(x["review"]) for x in reviewsGoogle],
+        "Nota do Review": [str(x["notaReview"]) for x in reviewsGoogle], 
+        "Data do Review": [str(x["dataReview"]) for x in reviewsGoogle]
+    }
+    print(dataGoogle)
+    df6 = pd.DataFrame(dataGoogle, columns = ["Nome do Local", "Review", "Nota do Review", "Data do Review"])
+    # Fim Google
+
+    # organizando os dados iFood
+    dataIfood={
+        "Nome do Local": [str(x["nomeLocal"]) for x in notasIfood], 
+        "Nota": [str(x["nota"]) for x in notasIfood], 
+        "# de Avaliações": [str(x["numeroAvaliacoes"]) for x in notasIfood],
+        "Endereço do Local": [str(x["endereco"]) for x in notasIfood],
+        "CNPJ": [str(x["cnpj"]) for x in notasIfood],
+    }
+    df7= pd.DataFrame(dataIfood, columns = ["Nome do Local", "Nota", "# de Avaliações", "Endereço do Local", "CNPJ"])
+
+    dataIfood={
+        "Nome do Local": [str(x["nomeLocal"]) for x in reviewsIfood], 
+        "Review": [str(x["review"]) for x in reviewsIfood],
+        "Nota do Review": [str(x["notaReview"]) for x in reviewsIfood], 
+        "Data do Review": [str(x["dataReview"]) for x in reviewsIfood],
+        "Nome do Usuário": [str(x["nomeUsuario"]) for x in reviewsIfood]
+    }
+    df8 = pd.DataFrame(dataIfood, columns = ["Nome do Local", "Review", "Nota do Review", "Data do Review", "Nome do Usuário"])
+    # fim iFood
+
+    name = uuid.uuid4().hex+".xlsx"
+    with pd.ExcelWriter("media/tmp-"+name) as writer:
         df1.to_excel(writer,index = False, header=True, sheet_name="Tripadvisor Notas",startcol=0)  
         df2.to_excel(writer,index = False, header=True, sheet_name="Tripadvisor Reviews",startcol=0)
+        df3.to_excel(writer,index = False, header=True, sheet_name="ReclameAqui Notas",startcol=0)
+        df4.to_excel(writer,index = False, header=True, sheet_name="ReclameAqui Reviews",startcol=0)
+        df5.to_excel(writer,index = False, header=True, sheet_name="Google Notas",startcol=0)
+        df6.to_excel(writer,index = False, header=True, sheet_name="Google Reviews",startcol=0)
+        df7.to_excel(writer,index = False, header=True, sheet_name="iFood Notas",startcol=0)
+        df8.to_excel(writer,index = False, header=True, sheet_name="iFoos Reviews",startcol=0)
     return name
     
 def baixar_excel(request):
-    name=request.GET['name']
-    file_path='media/tmp-'+name
+    name=request.GET["name"]
+    file_path="media/tmp-"+name
     if os.path.exists(file_path):
-        with open(file_path, 'rb') as fh:
+        with open(file_path, "rb") as fh:
             response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-            response['Content-Disposition'] = 'inline; filename=' + datetime.datetime.now().strftime("%d-%m-%Y %H %M %S")+'.xlsx'
+            response["Content-Disposition"] = "inline; filename=" + datetime.datetime.now().strftime("%d-%m-%Y %H %M %S")+".xlsx"
             return response
     raise Http404
