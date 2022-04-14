@@ -174,16 +174,16 @@ def buscarIfood(query):
 def buscar_review(request):
     context = {"segment": "index", "dados":[]}
 
-    if request.method == "POST":
+    if request.method == "GET":
         tripadvisor=Tripadvisor()
         google=Google()
         ifood=Ifood()
         reclameAqui=ReclameAqui()
 
-        urlsTrip=request.POST["urlTrivadisor"].split(";")
-        urlsReclame=request.POST["urlsReclame"].split(";")
-        urlsGoogle=request.POST["urlsGoogle"].split(";")
-        urlsIfood=request.POST["urlsIfood"].split(";")
+        urlsTrip=request.GET["urlTrivadisor"].split(";")
+        urlsReclame=request.GET["urlsReclame"].split(";")
+        urlsGoogle=request.GET["urlsGoogle"].split(";")
+        urlsIfood=request.GET["urlsIfood"].split(";")
         # print()
         # print(urlsTrip)
         # print()
@@ -216,9 +216,11 @@ def buscar_review(request):
             # "google":dadoGoogle,
             # "ifood":dadosIfood
         })
-        # name=gerar_excel(dados)
-        # return JsonResponse({"name":name})
+        name=gerar_excel(dados)
+        
         context["dados"]=dados
+        context["path_excel"]=name
+
         print(context)
         html_template = loader.get_template("home/detalhes.html")
         return HttpResponse(html_template.render(context))

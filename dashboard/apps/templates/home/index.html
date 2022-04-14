@@ -208,6 +208,10 @@
         showConfirmButton: false,
       }
     )
+
+    window.location.href = `/buscar_review?urlTrivadisor=${urlTrivadisor.join(';')}&urlsReclame=${urlsReclame.join(';')}&urlsGoogle=${urlsGoogle.join(';')}&urlsIfood=${urlsIfood.join(';')}`
+    
+    return true
     var form_data = new FormData();
 
     csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
@@ -217,7 +221,7 @@
     form_data.append("urlsReclame", urlsReclame.join(';'));
     form_data.append("urlsGoogle", urlsGoogle.join(';'));
     form_data.append("urlsIfood", urlsIfood.join(';'));
-
+    
     $.ajax({
       url: 'buscar_review',
       dataType: 'json',

@@ -15,7 +15,7 @@
           <h6 class="h2 text-white d-inline-block mb-0">Resultados da Busca</h6>
         </div>
         <div class="col-2">
-          <button type="button" id="buscar-review" class="btn btn-success btn-lg">Gerar Excel</button>
+          <button type="button" onclick="window.location.href='/baixar_excel?name={{path_excel}}'" class="btn btn-success btn-lg">Gerar Excel</button>
         </div>
       </div>
     </div>
@@ -39,23 +39,26 @@
               </tr>
             </thead>
             <tbody class="list">
-              <tr>
-                <td>
-                  <label>
-                    <strong>{{ dados.tripadvisor.notas.nome }}</strong>
-                  </label>
-                </td>
-                <td>
-                  <label>
-                    <strong>{{ dados.tripadvisor.notas.notaGeral }}</strong>
-                  </label>
-                </td>
-                <td>
-                  <label>
-                    <strong>{{ dados.tripadvisor.notas.numeroAvaliacoes }}</strong>
-                  </label>
-                </td>
-              </tr>
+              {% for u in dados %}
+                  <tr>
+                    <td>
+                      <label>
+                        <strong>{{ u.tripadvisor.notas.nome }}</strong>
+                      </label>
+                    </td>
+                    <td>
+                      <label>
+                        <strong>{{ u.tripadvisor.notas.notaGeral }}</strong>
+                      </label>
+                    </td>
+                    <td>
+                      <label>
+                        <strong>{{ u.tripadvisor.notas.numeroAvaliacoes }}</strong>
+                      </label>
+                    </td>
+                  </tr>
+              {% endfor %}
+              
             </tbody>
           </table>
         </div>
