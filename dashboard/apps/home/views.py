@@ -184,44 +184,39 @@ def buscar_review(request):
         urlsReclame=request.GET["urlsReclame"].split(";")
         urlsGoogle=request.GET["urlsGoogle"].split(";")
         urlsIfood=request.GET["urlsIfood"].split(";")
-        # print()
-        # print(urlsTrip)
-        # print()
-        # print(urlsReclame)
-        # print()
-        # print(urlsGoogle)
-        # print()
-        # print(urlsIfood)
-        
-        dados=[]
+     
+        dadoTripadvisor=[]
+        dadoReclameAqui=[]
+        dadoGoogle=[]
+        dadosIfood=[]
 
         for url in urlsTrip:
             if url != '':
-                dadoTripadvisor=tripadvisor.get("https://www.tripadvisor.com.br/"+url)
-        # for nomeEmpresa in urlsReclame:
-            # if nomeEmpresa != '':
-        #     dadoReclameAqui=reclameAqui.get(nomeEmpresa)
+                dadoTripadvisor.append(tripadvisor.get("https://www.tripadvisor.com.br/"+url))
+        for nomeEmpresa in urlsReclame:
+            if nomeEmpresa != '':
+                dadoReclameAqui.append(reclameAqui.get(nomeEmpresa))
 
-        # for nomeEmpresa in urlsGoogle:
-        # if nomeEmpresa != '':
-        #     dadoGoogle=google.get(nomeEmpresa)
+        for nomeEmpresa in urlsGoogle:
+            if nomeEmpresa != '':
+                dadoGoogle.append(google.get(nomeEmpresa))
 
-        # for url in urlsIfood:
-        # if url != '':
-        #     dadosIfood=ifood.get("https://www.ifood.com.br/delivery/"+url)
+        for url in urlsIfood:
+            if url != '':
+                dadosIfood.append(ifood.get("https://www.ifood.com.br/delivery/"+url))
 
-        dados.append({
+        dados = {
             "tripadvisor":dadoTripadvisor,
-            # "reclameAqui":dadoReclameAqui,
-            # "google":dadoGoogle,
-            # "ifood":dadosIfood
-        })
+            "reclameAqui":dadoReclameAqui,
+            "google":dadoGoogle,
+            "ifood":dadosIfood
+        }
+        
         name=gerar_excel(dados)
         
         context["dados"]=dados
         context["path_excel"]=name
 
-        print(context)
         html_template = loader.get_template("home/detalhes.html")
         return HttpResponse(html_template.render(context))
 
@@ -235,11 +230,11 @@ def gerar_excel(dados):
     reviewsGoogle=[]
     notasIfood=[]
     reviewsIfood=[]
-    for dado in dados:
+    for dado in dados["tripadvisor"]:
         # extraindo dados Tripadvisor
         try:
-            nota=dado["tripadvisor"]["notas"]
-            for r in dado["tripadvisor"]["reviews"]:
+            nota=dado["notas"]
+            for r in dado["reviews"]:
                 reviewsTripadvisor.append({
                     "local": r["local"],
                     "review":r["review"],
@@ -267,11 +262,11 @@ def gerar_excel(dados):
             })
         except:
             pass
-
+    for dado in dados["reclameAqui"]:
         # extraindo dados Reclame Aqui
         try:
-            nota=dado["reclameAqui"]
-            for r in dado["reclameAqui"]["reviews"]:
+            nota=dado
+            for r in dado["reviews"]:
                 reviewsReclameAqui.append({
                     "nomeLocal": r["nomeLocal"],
                     "tituloReview":r["tituloReview"],
@@ -324,11 +319,11 @@ def gerar_excel(dados):
         except:
             pass
         # Fim Reclame Aqui
-
+    for dado in dados["google"]:
         # extraindo dados google
         try:
-            nota=dado["google"]
-            for r in dado["google"]["reviews"]:
+            nota=dado
+            for r in dado["reviews"]:
                 reviewsGoogle.append({
                     "nomeUsuario": r["nomeUsuario"],
                     "notaReview": r["notaReview"],
@@ -346,11 +341,11 @@ def gerar_excel(dados):
         except:
             pass
         # fim google
-
-    #     # extraindo dados ifood
+    for dado in dados["ifood"]:
+        # extraindo dados ifood
         try:
-            nota=dado["ifood"]
-            for r in dado["ifood"]["reviews"]:
+            nota=dado
+            for r in dado["reviews"]:
                 reviewsIfood.append({
                     "nomeLocal": r["nomeLocal"],
                     "review": r["review"],
@@ -470,7 +465,6 @@ def gerar_excel(dados):
         "Cidade": [str(x["cidade"]) for x in notasGoogle],
         "Estado": [str(x["estado"]) for x in notasGoogle],
     }
-    print(dataGoogle)
     df5 = pd.DataFrame(dataGoogle, columns = ["Nome do Local", "Nota", "# de Avaliações", "Endereço", "Cidade", "Estado"])
 
     dataGoogle={
@@ -479,7 +473,6 @@ def gerar_excel(dados):
         "Nota do Review": [str(x["notaReview"]) for x in reviewsGoogle], 
         "Data do Review": [str(x["dataReview"]) for x in reviewsGoogle]
     }
-    print(dataGoogle)
     df6 = pd.DataFrame(dataGoogle, columns = ["Nome do Local", "Review", "Nota do Review", "Data do Review"])
     # Fim Google
 

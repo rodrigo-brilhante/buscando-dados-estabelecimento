@@ -38,7 +38,8 @@ class Google():
 
     def getEndereco(self, driver):
         try:
-            return driver.find_element(By.CSS_SELECTOR, '#kp-wp-tab-overview > div.TzHB6b.cLjAic.LMRCfc > div > div > div > div > div > div:nth-child(5) > div > div > div > span.LrzXr').text.strip()
+            return driver.find_element(By.XPATH, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[3]/div/div/div/div/div[1]/div/div/div/div/div/div[5]/div/div/div/span[2]').text.strip()
+
         except Exception as ex:
             print("*****************************************\n",ex)
             return ''
@@ -63,6 +64,8 @@ class Google():
             return len(expectedResult) > 0
 
     def get(self, nomeEmpresa):
+        # nomeEmpresa = nomeEmpresa.split(',')[0]
+        print(nomeEmpresa)
         chrome_options = Options()
         chrome_options.add_argument("--start-maximized")
         chrome_options.add_argument("--no-sandbox")
@@ -86,8 +89,14 @@ class Google():
         nota = self.getNota(driver)
         numeroAvaliacoes = self.getNumeroAvaliacao(driver)
         endereco = self.getEndereco(driver)
-        cidade = endereco.split(',')[2].split('-')[0]
-        estado = endereco.split(',')[2].split('-')[1]
+        try:
+            cidade = endereco.split(',')[2].split('-')[0]
+        except:
+            cidade = ''
+        try:
+            estado = endereco.split(',')[2].split('-')[1]
+        except:
+            estado = ''
 
         reviews = []
 

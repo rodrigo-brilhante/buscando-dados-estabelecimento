@@ -73,7 +73,7 @@ class Ifood():
         dados = {
             'nomeLocal': htmlNotas.find('p', {'class': 'rating-container__merchant'}).getText(),
             'nota': htmlNotas.find('p', {'class': 'rating-counter__average'}).getText(),
-            'numeroAvaliacoes': htmlNotas.find('h3', {'class': 'rating-counter__total'}).getText(),
+            'numeroAvaliacoes': htmlNotas.find('h3', {'class': 'rating-counter__total'}).getText().split(' ')[0],
             'endereco': endereco[0],
             'cnpj': htmlVerMais.find_all('p', {'class': 'merchant-details-about__info-data'})[3].getText().replace('CNPJ: ', ''),
             'reviews': reviews,

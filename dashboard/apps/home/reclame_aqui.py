@@ -18,6 +18,7 @@ class ReclameAqui():
             'PAST_LAST_YEAR' : '2 anos',
             'LAST_THREE_YEARS' : '3 anos',
         }
+        
         return {
             'periodo': periodo[avaliacao['type']],
             'pontuacaoFinal' : avaliacao['finalScore'],
@@ -234,6 +235,8 @@ class ReclameAqui():
                 
                 dados = {
                     'nomeDoLocal':nomeDoLocal,
+                    'nota': avaliacaoes[4]['pontuacaoFinal'],
+                    'numeroAvaliacoes': avaliacaoes[4]['totalReclamacoes'],
                     'avaliacaoes':avaliacaoes,
                     'problemas':problemas,
                     'reviews':reviews

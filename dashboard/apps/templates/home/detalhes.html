@@ -15,7 +15,8 @@
           <h6 class="h2 text-white d-inline-block mb-0">Resultados da Busca</h6>
         </div>
         <div class="col-2">
-          <button type="button" onclick="window.location.href='/baixar_excel?name={{path_excel}}'" class="btn btn-success btn-lg">Gerar Excel</button>
+          <button type="button" onclick="window.location.href='/baixar_excel?name={{path_excel}}'"
+            class="btn btn-success btn-lg">Gerar Excel</button>
         </div>
       </div>
     </div>
@@ -29,36 +30,37 @@
       <div class="card">
         {% csrf_token %}
         <!-- Light table -->
+        <h3 class="mt-2" style="text-align: center;">Tripadvisor</h3>
         <div class="table-responsive">
           <table class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
                 <th scope="col" class="sort" data-sort="name">Nome Empresa</th>
-                <th scope="col" class="sort" data-sort="budget">Nota getal</th>
+                <th scope="col" class="sort" data-sort="budget">Nota geral</th>
                 <th scope="col" class="sort" data-sort="status">Número de Avaliações</th>
               </tr>
             </thead>
             <tbody class="list">
-              {% for u in dados %}
-                  <tr>
-                    <td>
-                      <label>
-                        <strong>{{ u.tripadvisor.notas.nome }}</strong>
-                      </label>
-                    </td>
-                    <td>
-                      <label>
-                        <strong>{{ u.tripadvisor.notas.notaGeral }}</strong>
-                      </label>
-                    </td>
-                    <td>
-                      <label>
-                        <strong>{{ u.tripadvisor.notas.numeroAvaliacoes }}</strong>
-                      </label>
-                    </td>
-                  </tr>
+              {% for u in dados.tripadvisor %}
+              <tr>
+                <td>
+                  <label>
+                    <strong>{{ u.notas.nome }}</strong>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    <strong>{{ u.notas.notaGeral }}</strong>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    <strong>{{ u.notas.numeroAvaliacoes }}</strong>
+                  </label>
+                </td>
+              </tr>
               {% endfor %}
-              
+
             </tbody>
           </table>
         </div>
@@ -68,33 +70,37 @@
       <div class="card">
         {% csrf_token %}
         <!-- Light table -->
+        <h3 class="mt-2" style="text-align: center;">Reclame Aqui</h3>
         <div class="table-responsive">
           <table class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
                 <th scope="col" class="sort" data-sort="name">Nome Empresa</th>
-                <th scope="col" class="sort" data-sort="budget">Nota getal</th>
+                <th scope="col" class="sort" data-sort="budget">Nota geral</th>
                 <th scope="col" class="sort" data-sort="status">Número de Avaliações</th>
               </tr>
             </thead>
             <tbody class="list">
+              {% for u in dados.reclameAqui %}
               <tr>
                 <td>
                   <label>
-                    <strong>{{ dados.tripadvisor.notas.nome }}</strong>
+                    <strong>{{ u.nomeDoLocal }}</strong>
                   </label>
                 </td>
                 <td>
                   <label>
-                    <strong>{{ dados.tripadvisor.notas.notaGeral }}</strong>
+                    <strong>{{ u.nota }}</strong>
                   </label>
                 </td>
                 <td>
                   <label>
-                    <strong>{{ dados.tripadvisor.notas.numeroAvaliacoes }}</strong>
+                    <strong>{{ u.numeroAvaliacoes }}</strong>
                   </label>
                 </td>
               </tr>
+              {% endfor %}
+
             </tbody>
           </table>
         </div>
@@ -102,6 +108,88 @@
     </div>
   </div>
 
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        {% csrf_token %}
+        <!-- Light table -->
+        <h3 class="mt-2" style="text-align: center;">Google</h3>
+        <div class="table-responsive">
+          <table class="table align-items-center table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col" class="sort" data-sort="name">Nome Empresa</th>
+                <th scope="col" class="sort" data-sort="budget">Nota geral</th>
+                <th scope="col" class="sort" data-sort="status">Número de Avaliações</th>
+              </tr>
+            </thead>
+            <tbody class="list">
+              {% for u in dados.google %}
+              <tr>
+                <td>
+                  <label>
+                    <strong>{{ u.nomeLocal }}</strong>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    <strong>{{ u.nota }}</strong>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    <strong>{{ u.numeroAvaliacoes }}</strong>
+                  </label>
+                </td>
+              </tr>
+              {% endfor %}
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        {% csrf_token %}
+        <!-- Light table -->
+        <h3 class="mt-2" style="text-align: center;">iFood</h3>
+        <div class="table-responsive">
+          <table class="table align-items-center table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col" class="sort" data-sort="name">Nome Empresa</th>
+                <th scope="col" class="sort" data-sort="budget">Nota geral</th>
+                <th scope="col" class="sort" data-sort="status">Número de Avaliações</th>
+              </tr>
+            </thead>
+            <tbody class="list">
+              {% for u in dados.ifood %}
+              <tr>
+                <td>
+                  <label>
+                    <strong>{{ u.nomeLocal }}</strong>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    <strong>{{ u.nota }}</strong>
+                  </label>
+                </td>
+                <td>
+                  <label>
+                    <strong>{{ u.numeroAvaliacoes }}</strong>
+                  </label>
+                </td>
+              </tr>
+              {% endfor %}
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% endblock content %}
