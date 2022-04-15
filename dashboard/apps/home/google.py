@@ -17,49 +17,36 @@ import sys
 class Google():
 	def getTitulo(self, driver):
 		try:
-			return driver.find_element(By.XPATH, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[1]/div[2]/div[1]/div/div/h2/span').text.strip()
+			return driver.find_element(By.XPATH, '//*[@id="gsr"]/span[2]/g-lightbox/div/div[2]/div[3]/span/div/div/div/div[1]/div[1]/div[1]/div[1]').text.strip()
 		except Exception as ex:
 			print("*****************************************\n",ex)
 			return ''
 
 	def getNota(self, driver):
 		try:
-			return driver.find_element(By.CSS_SELECTOR, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[1]/div[2]/div[2]/div/div/span[1]').text.strip()
+			return driver.find_element(By.XPATH, '//*[@id="gsr"]/span[2]/g-lightbox/div/div[2]/div[3]/span/div/div/div/div[1]/div[3]/div[1]/span').text.strip()
 		except Exception as ex:
 			print("*****************************************\n",ex)
 			return ''
 
 	def getNumeroAvaliacao(self, driver):
 		try:
-			return driver.find_element(By.XPATH, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[1]/div[2]/div[2]/div/div/span[3]/span/a/span').text.strip()
+			return driver.find_element(By.XPATH, '//*[@id="gsr"]/span[2]/g-lightbox/div/div[2]/div[3]/span/div/div/div/div[1]/div[3]/div[1]/div/span/span').text.strip()
 		except Exception as ex:
 			print("*****************************************\n",ex)
 			return ''
 
 	def getEndereco(self, driver):
 		try:
-			html = BeautifulSoup(driver.page_source, 'html.parser')
-			spans = html.find_all('spans')
+			return driver.find_element(By.XPATH, '//*[@id="gsr"]/span[2]/g-lightbox/div/div[2]/div[3]/span/div/div/div/div[1]/div[1]/div[1]/div[2]').text.strip()
+			# html = BeautifulSoup(driver.page_source, 'html.parser')
+			# spans = html.find_all('spans')
 
-			for span in spans:
-				if "Endereço" in span.text:
-					return span.find_next('span').text.strip()
+			# for span in spans:
+			# 	if "Endereço" in span.text:
+			# 		return span.find_next('span').text.strip()
 		except Exception as ex:
 			print("*\n",ex)
-			return ''
-		
-	def getCidade(self, driver):
-		try:
-			return driver.find_element(By.XPATH, '//*[@id="_t2ZNYrfwC7_Z1sQPmPGcoAs44"]/div[1]/div[2]/div[1]/div/div/h2').text.strip()
-		except Exception as ex:
-			print("*****************************************\n",ex)
-			return ''
-
-	def getUrlIFood(self, driver):
-		try:
-			return driver.find_element(By.XPATH, '//*[@id="kp-wp-tab-overview"]/div[8]/div/div/div/div[1]/div/div/div[2]/div/a[1]').get_attribute('href')
-		except Exception as ex:
-			print("*****************************************\n",ex)
 			return ''
 
 	def filter(self, array, key, value):
@@ -75,7 +62,7 @@ class Google():
 		chrome_options.add_argument("--no-sandbox")
 		chrome_options.add_argument("--disable-dev-shm-usage")
 		chrome_options.add_argument('--kiosk-printing')
-		# chrome_options.add_argument("--headless")
+		chrome_options.add_argument("--headless")
 
 		chrome_options.page_load_strategy = 'normal'
 
@@ -88,6 +75,12 @@ class Google():
 		input = driver.find_element(By.XPATH, "//input[@name='q']")
 		input.send_keys(nomeEmpresa)
 		input.send_keys(Keys.ENTER)
+		time.sleep(3)
+
+		reviews = []
+
+		# driver.find_element_by_link_text("Ver todos os comentários do Google").click()
+		driver.find_element_by_xpath('//a[@data-sort_by="qualityScore"]').click()
 		time.sleep(3)
 
 		nomeLocal = self.getTitulo(driver)
@@ -103,11 +96,15 @@ class Google():
 		except:
 			estado = ''
 
-		reviews = []
+		print()
+		print('*****')
+		print(nomeLocal)
+		print(nota)
+		print(numeroAvaliacoes)
+		print(endereco)
+		print('*****')
+		print()
 
-		# driver.find_element_by_link_text("Ver todos os comentários do Google").click()
-		driver.find_element_by_xpath('//a[@data-sort_by="qualityScore"]').click()
-		time.sleep(3)
 
 		driver.execute_script("document.querySelector('div.AxAp9e:nth-child(2)').click();")
 
@@ -115,7 +112,7 @@ class Google():
 
 		naoChegou = True
 		numero_de_repeticao=1
-		while naoChegou and numero_de_repeticao <= 1:
+		while naoChegou and numero_de_repeticao <= 50:
 			print('buscando review google', str(numero_de_repeticao))
 			numero_de_repeticao=numero_de_repeticao+1
 			try:
@@ -135,6 +132,7 @@ class Google():
 					review = post.find('div',{'class':'Jtu6Td'}).getText()
 
 					itemReview = {
+						'nomeLocal':nomeLocal,
 						'nomeUsuario':nomeUsuario,
 						'notaReview':notaReview,
 						'dataReview':dataReview,

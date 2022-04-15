@@ -192,18 +192,31 @@ def buscar_review(request):
 
         for url in urlsTrip:
             if url != '':
-                dadoTripadvisor.append(tripadvisor.get("https://www.tripadvisor.com.br/"+url))
+                try:
+                    dadoTripadvisor.append(tripadvisor.get("https://www.tripadvisor.com.br/"+url))
+                except:
+                    pass
         for nomeEmpresa in urlsReclame:
             if nomeEmpresa != '':
-                dadoReclameAqui.append(reclameAqui.get(nomeEmpresa))
+                try:
+                    dadoReclameAqui.append(reclameAqui.get(nomeEmpresa))
+                except:
+                    pass
 
         for nomeEmpresa in urlsGoogle:
             if nomeEmpresa != '':
-                dadoGoogle.append(google.get(nomeEmpresa))
+                try:
+                    dadoGoogle.append(google.get(nomeEmpresa))
+                except:
+                    pass
 
         for url in urlsIfood:
             if url != '':
-                dadosIfood.append(ifood.get("https://www.ifood.com.br/delivery/"+url))
+                try:
+                    dadosIfood.append(ifood.get("https://www.ifood.com.br/delivery/"+url))
+                except:
+                    pass
+                
 
         dados = {
             "tripadvisor":dadoTripadvisor,
@@ -325,6 +338,7 @@ def gerar_excel(dados):
             nota=dado
             for r in dado["reviews"]:
                 reviewsGoogle.append({
+                    "nomeLocal": r["nomeLocal"],
                     "nomeUsuario": r["nomeUsuario"],
                     "notaReview": r["notaReview"],
                     "dataReview": r["dataReview"],
@@ -468,12 +482,13 @@ def gerar_excel(dados):
     df5 = pd.DataFrame(dataGoogle, columns = ["Nome do Local", "Nota", "# de Avaliações", "Endereço", "Cidade", "Estado"])
 
     dataGoogle={
-        "Nome do Local": [str(x["nomeUsuario"]) for x in reviewsGoogle], 
+        "Nome do Local": [str(x["nomeLocal"]) for x in reviewsGoogle], 
         "Review": [str(x["review"]) for x in reviewsGoogle],
         "Nota do Review": [str(x["notaReview"]) for x in reviewsGoogle], 
-        "Data do Review": [str(x["dataReview"]) for x in reviewsGoogle]
+        "Data do Review": [str(x["dataReview"]) for x in reviewsGoogle],
+        "Nome do Usuário": [str(x["nomeUsuario"]) for x in reviewsGoogle], 
     }
-    df6 = pd.DataFrame(dataGoogle, columns = ["Nome do Local", "Review", "Nota do Review", "Data do Review"])
+    df6 = pd.DataFrame(dataGoogle, columns = ["Nome do Local", "Review", "Nota do Review", "Data do Review", "Nome do Usuário"])
     # Fim Google
 
     # organizando os dados iFood
