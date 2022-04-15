@@ -92,7 +92,8 @@ class Tripadvisor():
 				mesLimite = self.MesLimite()
 				contadorPag = 0
 				idPage = 10
-				while(buscarReviews):    
+				while(buscarReviews):  
+					print('buscando review tripadvasor')
 					if contadorPag !=0:
 						part1 = url.split('-Reviews-')[0]
 						part2 = url.split('-Reviews-')[1]

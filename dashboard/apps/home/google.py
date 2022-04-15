@@ -15,138 +15,149 @@ from bs4 import BeautifulSoup
 import sys
 
 class Google():
-    def getTitulo(self, driver):
-        try:
-            return driver.find_element(By.XPATH, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[1]/div[2]/div[1]/div/div/h2/span').text.strip()
-        except Exception as ex:
-            print("*****************************************\n",ex)
-            return ''
+	def getTitulo(self, driver):
+		try:
+			return driver.find_element(By.XPATH, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[1]/div[2]/div[1]/div/div/h2/span').text.strip()
+		except Exception as ex:
+			print("*****************************************\n",ex)
+			return ''
 
-    def getNota(self, driver):
-        try:
-            return driver.find_element(By.XPATH, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[1]/div[2]/div[2]/div/div/span[1]').text.strip()
-        except Exception as ex:
-            print("*****************************************\n",ex)
-            return ''
+	def getNota(self, driver):
+		try:
+			return driver.find_element(By.CSS_SELECTOR, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[1]/div[2]/div[2]/div/div/span[1]').text.strip()
+		except Exception as ex:
+			print("*****************************************\n",ex)
+			return ''
 
-    def getNumeroAvaliacao(self, driver):
-        try:
-            return driver.find_element(By.XPATH, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[1]/div[2]/div[2]/div/div/span[3]/span/a/span').text.strip()
-        except Exception as ex:
-            print("*****************************************\n",ex)
-            return ''
+	def getNumeroAvaliacao(self, driver):
+		try:
+			return driver.find_element(By.XPATH, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[1]/div[2]/div[2]/div/div/span[3]/span/a/span').text.strip()
+		except Exception as ex:
+			print("*****************************************\n",ex)
+			return ''
 
-    def getEndereco(self, driver):
-        try:
-            return driver.find_element(By.XPATH, '/html/body/div[7]/div/div[10]/div[2]/div/div/div[2]/div/div[3]/div/div/div/div/div[1]/div/div/div/div/div/div[5]/div/div/div/span[2]').text.strip()
+	def getEndereco(self, driver):
+		try:
+			html = BeautifulSoup(driver.page_source, 'html.parser')
+			spans = html.find_all('spans')
 
-        except Exception as ex:
-            print("*****************************************\n",ex)
-            return ''
+			for span in spans:
+				if "Endereço" in span.text:
+					return span.find_next('span').text.strip()
+		except Exception as ex:
+			print("*\n",ex)
+			return ''
+		
+	def getCidade(self, driver):
+		try:
+			return driver.find_element(By.XPATH, '//*[@id="_t2ZNYrfwC7_Z1sQPmPGcoAs44"]/div[1]/div[2]/div[1]/div/div/h2').text.strip()
+		except Exception as ex:
+			print("*****************************************\n",ex)
+			return ''
 
-    def getCidade(self, driver):
-        try:
-            return driver.find_element(By.XPATH, '//*[@id="_t2ZNYrfwC7_Z1sQPmPGcoAs44"]/div[1]/div[2]/div[1]/div/div/h2').text.strip()
-        except Exception as ex:
-            print("*****************************************\n",ex)
-            return ''
+	def getUrlIFood(self, driver):
+		try:
+			return driver.find_element(By.XPATH, '//*[@id="kp-wp-tab-overview"]/div[8]/div/div/div/div[1]/div/div/div[2]/div/a[1]').get_attribute('href')
+		except Exception as ex:
+			print("*****************************************\n",ex)
+			return ''
 
-    def getUrlIFood(self, driver):
-        try:
-            return driver.find_element(By.XPATH, '//*[@id="kp-wp-tab-overview"]/div[8]/div/div/div/div[1]/div/div/div[2]/div/a[1]').get_attribute('href')
-        except Exception as ex:
-            print("*****************************************\n",ex)
-            return ''
+	def filter(self, array, key, value):
+			keyValList = [value]
+			expectedResult = [d for d in array if d[key] in keyValList]
+			return len(expectedResult) > 0
 
-    def filter(self, array, key, value):
-            keyValList = [value]
-            expectedResult = [d for d in array if d[key] in keyValList]
-            return len(expectedResult) > 0
+	def get(self, nomeEmpresa):
+		# nomeEmpresa = nomeEmpresa.split(',')[0]
+		print(nomeEmpresa)
+		chrome_options = Options()
+		chrome_options.add_argument("--start-maximized")
+		chrome_options.add_argument("--no-sandbox")
+		chrome_options.add_argument("--disable-dev-shm-usage")
+		chrome_options.add_argument('--kiosk-printing')
+		# chrome_options.add_argument("--headless")
 
-    def get(self, nomeEmpresa):
-        # nomeEmpresa = nomeEmpresa.split(',')[0]
-        print(nomeEmpresa)
-        chrome_options = Options()
-        chrome_options.add_argument("--start-maximized")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument('--kiosk-printing')
-        chrome_options.add_argument("--headless")
+		chrome_options.page_load_strategy = 'normal'
 
-        chrome_options.page_load_strategy = 'normal'
+		driver = uc.Chrome(options=chrome_options)
 
-        driver = uc.Chrome(options=chrome_options)
+		driver.get('https://www.google.com/')
 
-        driver.get('https://www.google.com/')
+		time.sleep(randint(1,3))
 
-        time.sleep(randint(1,3))
+		input = driver.find_element(By.XPATH, "//input[@name='q']")
+		input.send_keys(nomeEmpresa)
+		input.send_keys(Keys.ENTER)
+		time.sleep(3)
 
-        input = driver.find_element(By.XPATH, "//input[@name='q']")
-        input.send_keys(nomeEmpresa)
-        input.send_keys(Keys.ENTER)
+		nomeLocal = self.getTitulo(driver)
+		nota = self.getNota(driver)
+		numeroAvaliacoes = self.getNumeroAvaliacao(driver)
+		endereco = self.getEndereco(driver)
+		try:
+			cidade = endereco.split(',')[2].split('-')[0]
+		except:
+			cidade = ''
+		try:
+			estado = endereco.split(',')[2].split('-')[1]
+		except:
+			estado = ''
 
-        nomeLocal = self.getTitulo(driver)
-        nota = self.getNota(driver)
-        numeroAvaliacoes = self.getNumeroAvaliacao(driver)
-        endereco = self.getEndereco(driver)
-        try:
-            cidade = endereco.split(',')[2].split('-')[0]
-        except:
-            cidade = ''
-        try:
-            estado = endereco.split(',')[2].split('-')[1]
-        except:
-            estado = ''
+		reviews = []
 
-        reviews = []
+		# driver.find_element_by_link_text("Ver todos os comentários do Google").click()
+		driver.find_element_by_xpath('//a[@data-sort_by="qualityScore"]').click()
+		time.sleep(3)
 
-        driver.find_element_by_link_text("Ver todos os comentários do Google").click()
+		driver.execute_script("document.querySelector('div.AxAp9e:nth-child(2)').click();")
 
-        time.sleep(randint(1,3))
+		time.sleep(randint(1,3))
 
-        driver.execute_script("document.querySelector('div.AxAp9e:nth-child(2)').click();")
+		naoChegou = True
+		numero_de_repeticao=1
+		while naoChegou and numero_de_repeticao <= 1:
+			print('buscando review google', str(numero_de_repeticao))
+			numero_de_repeticao=numero_de_repeticao+1
+			try:
+				driver.execute_script("document.querySelector('.review-dialog-list').scrollTop = 1000000;")
 
-        time.sleep(randint(1,3))
+				time.sleep(randint(2,4))
 
-        naoChegou = True
-        while naoChegou:
-            driver.execute_script("document.querySelector('.review-dialog-list').scrollTop = 10000;")
+				soup = BeautifulSoup(driver.page_source, 'html.parser')
+				div = soup.find('div',{'id':'reviewSort'})
 
-            time.sleep(randint(2,4))
+				divReviews = div.find_all('div',{'class':'gws-localreviews__google-review'})
 
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
-            div = soup.find('div',{'id':'reviewSort'})
+				for post in divReviews:
+					nomeUsuario = post.find('div',{'class':'TSUbDb'}).getText()
+					notaReview = post.find('span',{'class':'Fam1ne'}).get('aria-label')
+					dataReview = post.find('span',{'class':'dehysf'}).getText()
+					review = post.find('div',{'class':'Jtu6Td'}).getText()
 
-            divReviews = div.find_all('div',{'class':'gws-localreviews__google-review'})
+					itemReview = {
+						'nomeUsuario':nomeUsuario,
+						'notaReview':notaReview,
+						'dataReview':dataReview,
+						'review':review
+					}
+					if '3 meses' in dataReview:
+						naoChegou = False
+						break
 
-            for post in divReviews:
-                nomeUsuario = post.find('div',{'class':'TSUbDb'}).getText()
-                notaReview = post.find('span',{'class':'Fam1ne'}).get('aria-label')
-                dataReview = post.find('span',{'class':'dehysf'}).getText()
-                review = post.find('div',{'class':'Jtu6Td'}).getText()
+					if not self.filter(reviews, 'nomeUsuario', nomeUsuario):
+						reviews.append(itemReview)
+			except:
+				pass
 
-                itemReview = {
-                    'nomeUsuario':nomeUsuario,
-                    'notaReview':notaReview,
-                    'dataReview':dataReview,
-                    'review':review
-                }
-                if '3 meses' in dataReview:
-                    naoChegou = False
-                    break
+		dados = {
+			'nomeLocal':nomeLocal,
+			'nota':nota.split(' ')[0],
+			'numeroAvaliacoes':numeroAvaliacoes,
+			'endereco':endereco,
+			'cidade':cidade,
+			'estado':estado,
+			'reviews':reviews,
+		}
 
-                if not self.filter(reviews, 'nomeUsuario', nomeUsuario):
-                    reviews.append(itemReview)
-
-        dados = {
-            'nomeLocal':nomeLocal,
-            'nota':nota.split(' ')[0],
-            'numeroAvaliacoes':numeroAvaliacoes,
-            'endereco':endereco,
-            'cidade':cidade,
-            'estado':estado,
-            'reviews':reviews,
-        }
-
-        driver.quit()
-        return dados
+		driver.quit()
+		return dados
