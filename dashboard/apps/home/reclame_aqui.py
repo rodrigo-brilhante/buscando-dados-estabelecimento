@@ -110,7 +110,7 @@ class ReclameAqui():
 
         return json.loads(resp.text)
 
-    def getReviews(self, id, nomeLocal):
+    def getReviews(self, id, nomeLocal, qtdReview):
         reclamacoesNaoRespondidas = self.getReclamacoesNaoRespondidas(id)
         reclamacoesRespondidas = self.getReclamacoesRespondidas(id)
         reclamacoesAvaliadas = self.getReclamacoesAvaliadas(id)
@@ -121,6 +121,7 @@ class ReclameAqui():
             'ANSWERED':'Respondidos',
         }
 
+        contador = 0
         for review in reclamacoesNaoRespondidas['data']:
             dadosReviews.append({
                 'nomeLocal':nomeLocal,
@@ -129,6 +130,11 @@ class ReclameAqui():
                 'data':review['created'],
                 'status':status[review['status']]
             })
+            contador+=1
+            print("bucando review 1 reclame aqui:"+str(contador))
+            if contador == qtdReview:
+                break
+        contador = 0
         for review in reclamacoesRespondidas['data']:
             dadosReviews.append({
                 'nomeLocal':nomeLocal,
@@ -137,6 +143,11 @@ class ReclameAqui():
                 'data':review['created'],
                 'status':status[review['status']]
             })
+            contador+=1
+            print("bucando review 2 reclame aqui:"+str(contador))
+            if contador == qtdReview:
+                break
+        contador = 0
         for review in reclamacoesAvaliadas['data']:
             dadosReviews.append({
                 'nomeLocal':nomeLocal,
@@ -145,12 +156,17 @@ class ReclameAqui():
                 'data':review['created'],
                 'status':status[review['status']]
             })
+            contador+=1
+            print("bucando review 3 reclame aqui:"+str(contador))
+
+            if contador >= int(qtdReview):
+                break
         
         return dadosReviews
         
     warnings.filterwarnings('ignore')
 
-    def get(self, nome):
+    def get(self, nome, qtdReview):
         with requests.Session() as session:
             try:
                 url = "https://iosearch.reclameaqui.com.br/raichu-io-site-search-v1/companies/search/" + nome.replace(' ', '%20')
@@ -231,7 +247,7 @@ class ReclameAqui():
 
                 problemas = self.getProblemas(dados['complainResult']['complains'])
             
-                reviews = self.getReviews(id, nomeDoLocal)
+                reviews = self.getReviews(id, nomeDoLocal, qtdReview)
                 
                 dados = {
                     'nomeDoLocal':nomeDoLocal,

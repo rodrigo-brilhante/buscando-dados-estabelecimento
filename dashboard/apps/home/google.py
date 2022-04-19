@@ -54,9 +54,8 @@ class Google():
 			expectedResult = [d for d in array if d[key] in keyValList]
 			return len(expectedResult) > 0
 
-	def get(self, nomeEmpresa):
-		# nomeEmpresa = nomeEmpresa.split(',')[0]
-		print(nomeEmpresa)
+	def get(self, nomeEmpresa, qtdReview):
+		print('google')
 		chrome_options = Options()
 		chrome_options.add_argument("--start-maximized")
 		chrome_options.add_argument("--no-sandbox")
@@ -96,25 +95,13 @@ class Google():
 		except:
 			estado = ''
 
-		print()
-		print('*****')
-		print(nomeLocal)
-		print(nota)
-		print(numeroAvaliacoes)
-		print(endereco)
-		print('*****')
-		print()
-
-
 		driver.execute_script("document.querySelector('div.AxAp9e:nth-child(2)').click();")
 
 		time.sleep(randint(1,3))
 
 		naoChegou = True
-		numero_de_repeticao=1
-		while naoChegou and numero_de_repeticao <= 50:
-			print('buscando review google', str(numero_de_repeticao))
-			numero_de_repeticao=numero_de_repeticao+1
+		contador = 0
+		while naoChegou:
 			try:
 				driver.execute_script("document.querySelector('.review-dialog-list').scrollTop = 1000000;")
 
@@ -138,12 +125,16 @@ class Google():
 						'dataReview':dataReview,
 						'review':review
 					}
-					if '3 meses' in dataReview:
-						naoChegou = False
-						break
 
 					if not self.filter(reviews, 'nomeUsuario', nomeUsuario):
 						reviews.append(itemReview)
+						contador+=1
+						print("bucando review google:"+str(contador))
+					
+					if contador >= int(qtdReview):
+						naoChegou = False
+						break
+
 			except:
 				pass
 

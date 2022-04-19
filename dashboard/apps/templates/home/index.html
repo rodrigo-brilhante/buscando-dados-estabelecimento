@@ -19,6 +19,21 @@
         </div>
 
       </div>
+      <div class="row justify-content-center py-4">
+        <h6 class="h2 text-white d-inline-block mb-0">Selecione a quantidade de reviews</h6>
+        <select class="form-select form-select-lg mb-0 ml-2" name="qtdReview" id="qtdReview">
+          <option selected value="100">100</option>
+          <option value="200">200</option>
+          <option value="300">300</option>
+          <option value="400">400</option>
+          <option value="500">500</option>
+          <option value="600">600</option>
+          <option value="700">700</option>
+          <option value="800">800</option>
+          <option value="900">900</option>
+          <option value="1000">1000</option>
+        </select>
+      </div>
     </div>
   </div>
 </div>
@@ -169,6 +184,10 @@
     var urlsReclame = []
     var urlsGoogle = []
     var urlsIfood = []
+    var select = document.getElementById("qtdReview");
+    var qtdReview = select.options[select.selectedIndex].value;
+
+    console.log(qtdReview);
     $("input.tripadvisor").each(
       function () {
         if ($(this).is(':checked')) {
@@ -209,46 +228,7 @@
       }
     )
 
-    window.location.href = `/buscar_review?urlTrivadisor=${urlTrivadisor.join(';')}&urlsReclame=${urlsReclame.join(';')}&urlsGoogle=${urlsGoogle.join(';')}&urlsIfood=${urlsIfood.join(';')}`
-    
-    return true
-    var form_data = new FormData();
-
-    csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
-
-    form_data.append("csrfmiddlewaretoken", csrf_token);
-    form_data.append("urlTrivadisor", urlTrivadisor.join(';'));
-    form_data.append("urlsReclame", urlsReclame.join(';'));
-    form_data.append("urlsGoogle", urlsGoogle.join(';'));
-    form_data.append("urlsIfood", urlsIfood.join(';'));
-    
-    $.ajax({
-      url: 'buscar_review',
-      dataType: 'json',
-      cache: false,
-      contentType: false,
-      processData: false,
-      data: form_data,
-      type: 'POST',
-      success: function (response) {
-        window.location.href = "/baixar_excel?name=" + response['name']
-        console.log("/baixar_excel?name=" + response['name'])
-        Swal.fire(
-          {
-            icon: 'success',
-            title: 'Rotina executada com sucesso',
-            showConfirmButton: false,
-          }
-        )
-      },
-      error: function (response) {
-        Swal.fire(
-          'Erro na execução',
-          'Ocorreu um erro na execução da rotina.',
-          'error'
-        )
-      }
-    });
+    window.location.href = `/buscar_review?qtdReview=${qtdReview}&urlTrivadisor=${urlTrivadisor.join(';')}&urlsReclame=${urlsReclame.join(';')}&urlsGoogle=${urlsGoogle.join(';')}&urlsIfood=${urlsIfood.join(';')}`
   });
 
   $('#bt-search').on('click', function () {

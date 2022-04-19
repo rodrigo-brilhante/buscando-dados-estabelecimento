@@ -26,7 +26,7 @@ class Tripadvisor():
 			'12' : 'setembro',
 		}[datetime.today().strftime('%m')]
 	
-	def get(self, url):
+	def get(self, url, qtdReview):
 		with requests.Session() as session:
 			try:
 				headers = CaseInsensitiveDict()
@@ -72,13 +72,19 @@ class Tripadvisor():
 				# pontuacoes => comida | servico | preco
 				pontuacoes = soup.find_all('span', {"class":"cwxUN"})
 				if possuiAvaliacao:
-					pontuacaoComida = pontuacoes[0].span['class'][1].split('_')[1]
-					pontuacaoServico = pontuacoes[1].span['class'][1].split('_')[1]
-					pontuacaoPreco = pontuacoes[2].span['class'][1].split('_')[1]
+					pontuacaoComida = pontuacoes[0].span['class'][1].split('_')[1][0]+','+pontuacoes[0].span['class'][1].split('_')[1][1]
+					pontuacaoServico = pontuacoes[1].span['class'][1].split('_')[1][0]+','+pontuacoes[1].span['class'][1].split('_')[1][1]
+					pontuacaoPreco = pontuacoes[2].span['class'][1].split('_')[1][0]+','+pontuacoes[2].span['class'][1].split('_')[1][1]
+					try:
+						pontuacaAmbiente = pontuacoes[3].span['class'][1].split('_')[1][0]+','+pontuacoes[3].span['class'][1].split('_')[1][1]
+					except:
+						pontuacaAmbiente = 'não possui pontuação ambiente'
+
 				else:
 					pontuacaoComida = 'ainda não recebeu pontuações suficientes'
 					pontuacaoServico = 'ainda não recebeu pontuações suficientes'
 					pontuacaoPreco = 'ainda não recebeu pontuações suficientes'
+					pontuacaAmbiente = 'ainda não recebeu pontuações suficientes'
 
 				ranking = 'Nº ' + soup.find_all('a', {"class":"fhGHT"})[0].getText().split(' ')[1] + ' de ' + soup.find_all('a', {"class":"fhGHT"})[0].getText().split(' ')[3]
 				localidadeRanking = soup.find_all('a', {"class":"fhGHT"})[0].getText().split('em')[1].strip()
@@ -92,8 +98,8 @@ class Tripadvisor():
 				mesLimite = self.MesLimite()
 				contadorPag = 0
 				idPage = 10
+				contador=0
 				while(buscarReviews):  
-					print('buscando review tripadvasor')
 					if contadorPag !=0:
 						part1 = url.split('-Reviews-')[0]
 						part2 = url.split('-Reviews-')[1]
@@ -136,9 +142,9 @@ class Tripadvisor():
 						review = div.find('div',{'class':'entry'}).getText()
 						nota = div.find_all('span')[1]['class'][1].split('bubble_')[1]
 						
-						if(dataReview.split(' ')[0] == mesLimite):
-							buscarReviews = False
-							break
+						# if(dataReview.split(' ')[0] == mesLimite):
+						# 	buscarReviews = False
+						# 	break
 
 						reviews.append({
 							'local': nomeEmpresa,
@@ -147,6 +153,11 @@ class Tripadvisor():
 							'dataReview': dataReview,
 							'cidadeLocal': cidade
 						})
+						contador+=1
+						print("bucando review tripadiviser:"+str(contador))
+						if contador >= int(qtdReview):
+							buscarReviews = False
+							break
 
 					contadorPag+=1
 
@@ -159,6 +170,7 @@ class Tripadvisor():
 						'pontuacaoComida': pontuacaoComida,
 						'pontuacaoServico': pontuacaoServico,
 						'pontuacaoPreco': pontuacaoPreco,
+						'pontuacaAmbiente': pontuacaAmbiente,
 						'ranking': ranking,
 						'localidadeRanking': localidadeRanking,
 						'cidade': cidade,

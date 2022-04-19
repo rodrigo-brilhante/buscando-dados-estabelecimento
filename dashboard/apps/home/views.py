@@ -180,6 +180,8 @@ def buscar_review(request):
         ifood=Ifood()
         reclameAqui=ReclameAqui()
 
+        qtdReview=request.GET["qtdReview"]
+
         urlsTrip=request.GET["urlTrivadisor"].split(";")
         urlsReclame=request.GET["urlsReclame"].split(";")
         urlsGoogle=request.GET["urlsGoogle"].split(";")
@@ -193,27 +195,27 @@ def buscar_review(request):
         for url in urlsTrip:
             if url != '':
                 try:
-                    dadoTripadvisor.append(tripadvisor.get("https://www.tripadvisor.com.br/"+url))
+                    dadoTripadvisor.append(tripadvisor.get("https://www.tripadvisor.com.br/"+url, qtdReview))
                 except:
                     pass
         for nomeEmpresa in urlsReclame:
             if nomeEmpresa != '':
                 try:
-                    dadoReclameAqui.append(reclameAqui.get(nomeEmpresa))
+                    dadoReclameAqui.append(reclameAqui.get(nomeEmpresa, qtdReview))
                 except:
                     pass
 
         for nomeEmpresa in urlsGoogle:
             if nomeEmpresa != '':
                 try:
-                    dadoGoogle.append(google.get(nomeEmpresa))
+                    dadoGoogle.append(google.get(nomeEmpresa, qtdReview))
                 except:
                     pass
 
         for url in urlsIfood:
             if url != '':
                 try:
-                    dadosIfood.append(ifood.get("https://www.ifood.com.br/delivery/"+url))
+                    dadosIfood.append(ifood.get("https://www.ifood.com.br/delivery/"+url, qtdReview))
                 except:
                     pass
                 
@@ -265,6 +267,7 @@ def gerar_excel(dados):
                 "pontuacaoComida": nota["pontuacaoComida"],
                 "pontuacaoPreco": nota["pontuacaoPreco"],
                 "pontuacaoServico": nota["pontuacaoServico"],
+                "pontuacaAmbiente": nota["pontuacaAmbiente"],
                 "ranking": nota["ranking"],
                 "telefone": nota["telefone"],
                 "breakdown_nota_1": nota["breakdownNotas"]["nota_1"],
@@ -391,6 +394,7 @@ def gerar_excel(dados):
         "Pontuação Comida": [str(x["pontuacaoComida"]) for x in notasTripadvisor], 
         "Pontuação Serviço": [str(x["pontuacaoServico"]) for x in notasTripadvisor],
         "Pontuação Preço": [str(x["pontuacaoPreco"]) for x in notasTripadvisor],
+        "Pontuação Ambiente": [str(x["pontuacaAmbiente"]) for x in notasTripadvisor],
         "Ranking": [str(x["ranking"]) for x in notasTripadvisor], 
         "Localidade do Ranking": [str(x["localidadeRanking"]) for x in notasTripadvisor], 
         "Cidade": [str(x["cidade"]) for x in notasTripadvisor],
@@ -400,7 +404,7 @@ def gerar_excel(dados):
 
     df1 = pd.DataFrame(dataTripadvisor, columns = ["Nome", "# de Avaliações", 
     "Nota Geral","5","4","3","2","1",
-    "Pontuação Comida", "Pontuação Serviço","Pontuação Preço",
+    "Pontuação Comida", "Pontuação Serviço","Pontuação Preço","Pontuação Ambiente",
     "Ranking", "Localidade do Ranking", "Cidade",
     "Endereço", "Telefone"])
 
@@ -417,48 +421,50 @@ def gerar_excel(dados):
 
     # organizando os dados Reclame Aqui
     dataReclameAqui={
-    "Nome do Local":[str(x["nomeLocal"]) for x in notasReclameAqui], 
-    
-    "Nota Geral":[str(x["pontuacaoFinalGeral"]) for x in notasReclameAqui], 
-    "% Respondidas":[str(x["percentualRespondidoGeral"]) for x in notasReclameAqui],
-    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocioGeral"]) for x in notasReclameAqui], 
-    "Índice Solução":[str(x["percentualResolvidoGeral"]) for x in notasReclameAqui], 
-    "# Reclamações":[str(x["totalReclamacoesGeral"]) for x in notasReclameAqui], 
+        "Nome do Local":[str(x["nomeLocal"]) for x in notasReclameAqui], 
+        
+        "Nota Geral":[str(x["pontuacaoFinalGeral"]) for x in notasReclameAqui], 
+        "% Respondidas":[str(x["percentualRespondidoGeral"]) for x in notasReclameAqui],
+        "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocioGeral"]) for x in notasReclameAqui], 
+        "Índice Solução":[str(x["percentualResolvidoGeral"]) for x in notasReclameAqui], 
+        "# Reclamações":[str(x["totalReclamacoesGeral"]) for x in notasReclameAqui], 
 
-    "Nota 6 Meses":[str(x["pontuacaoFinal6meses"]) for x in notasReclameAqui], 
-    "% Respondidas":[str(x["percentualRespondido6meses"]) for x in notasReclameAqui], 
-    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio6meses"]) for x in notasReclameAqui], 
-    "Índice Solução":[str(x["percentualResolvido6meses"]) for x in notasReclameAqui], 
-    "# Reclamações":[str(x["totalReclamacoes6meses"]) for x in notasReclameAqui], 
-    
-    "Nota 12 Meses":[str(x["pontuacaoFinal12meses"]) for x in notasReclameAqui], 
-    "% Respondidas":[str(x["percentualRespondido12meses"]) for x in notasReclameAqui], 
-    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio12meses"]) for x in notasReclameAqui], 
-    "Índice Solução":[str(x["percentualResolvido12meses"]) for x in notasReclameAqui], 
-    "# Reclamações":[str(x["totalReclamacoes12meses"]) for x in notasReclameAqui], 
-    
-    "Nota Ano -1":[str(x["pontuacaoFinal1ano"]) for x in notasReclameAqui], 
-    "% Respondidas":[str(x["percentualRespondido1ano"]) for x in notasReclameAqui], 
-    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio1ano"]) for x in notasReclameAqui], 
-    "Índice Solução":[str(x["percentualResolvido1ano"]) for x in notasReclameAqui], 
-    "# Reclamações":[str(x["totalReclamacoes1ano"]) for x in notasReclameAqui], 
+        "Nota 6 Meses":[str(x["pontuacaoFinal6meses"]) for x in notasReclameAqui], 
+        "% Respondidas":[str(x["percentualRespondido6meses"]) for x in notasReclameAqui], 
+        "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio6meses"]) for x in notasReclameAqui], 
+        "Índice Solução":[str(x["percentualResolvido6meses"]) for x in notasReclameAqui], 
+        "# Reclamações":[str(x["totalReclamacoes6meses"]) for x in notasReclameAqui], 
+        
+        "Nota 12 Meses":[str(x["pontuacaoFinal12meses"]) for x in notasReclameAqui], 
+        "% Respondidas":[str(x["percentualRespondido12meses"]) for x in notasReclameAqui], 
+        "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio12meses"]) for x in notasReclameAqui], 
+        "Índice Solução":[str(x["percentualResolvido12meses"]) for x in notasReclameAqui], 
+        "# Reclamações":[str(x["totalReclamacoes12meses"]) for x in notasReclameAqui], 
+        
+        "Nota Ano -1":[str(x["pontuacaoFinal1ano"]) for x in notasReclameAqui], 
+        "% Respondidas":[str(x["percentualRespondido1ano"]) for x in notasReclameAqui], 
+        "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio1ano"]) for x in notasReclameAqui], 
+        "Índice Solução":[str(x["percentualResolvido1ano"]) for x in notasReclameAqui], 
+        "# Reclamações":[str(x["totalReclamacoes1ano"]) for x in notasReclameAqui], 
 
-    "Nota Ano -2":[str(x["pontuacaoFinal2ano"]) for x in notasReclameAqui], 
-    "% Respondidas":[str(x["percentualRespondido2ano"]) for x in notasReclameAqui], 
-    "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio2ano"]) for x in notasReclameAqui], 
-    "Índice Solução":[str(x["percentualResolvido2ano"]) for x in notasReclameAqui], 
-    "# Reclamações":[str(x["totalReclamacoes2ano"]) for x in notasReclameAqui], 
-   
-    "%":[str(x["problema1porcentagem"]) for x in notasReclameAqui],
-    "Motivo":[str(x["problema1motivo"]) for x in notasReclameAqui],
+        "Nota Ano -2":[str(x["pontuacaoFinal2ano"]) for x in notasReclameAqui], 
+        "% Respondidas":[str(x["percentualRespondido2ano"]) for x in notasReclameAqui], 
+        "% Volta Negócio":[str(x["percentualVoltariamAfazerNegocio2ano"]) for x in notasReclameAqui], 
+        "Índice Solução":[str(x["percentualResolvido2ano"]) for x in notasReclameAqui], 
+        "# Reclamações":[str(x["totalReclamacoes2ano"]) for x in notasReclameAqui], 
     
-    "%":[str(x["problema2porcentagem"]) for x in notasReclameAqui],
-    "Motivo":[str(x["problema2motivo"]) for x in notasReclameAqui],
-    
-    "%":[str(x["problema3porcentagem"]) for x in notasReclameAqui],
-    "Motivo":[str(x["problema3motivo"]) for x in notasReclameAqui],
+        "1 - %":[str(x["problema1porcentagem"]) for x in notasReclameAqui],
+        "1 - Motivo":[str(x["problema1motivo"]) for x in notasReclameAqui],
+        
+        "2 - %":[str(x["problema2porcentagem"]) for x in notasReclameAqui],
+        "2 - Motivo":[str(x["problema2motivo"]) for x in notasReclameAqui],
+        
+        "3 - %":[str(x["problema3porcentagem"]) for x in notasReclameAqui],
+        "3 - Motivo":[str(x["problema3motivo"]) for x in notasReclameAqui],
     }
-    df3 = pd.DataFrame(dataReclameAqui, columns=["Nome do Local", "Nota Geral", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota 6 Meses", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota 12 Meses", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota Ano -1", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota Ano -2", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "%", "Motivo", "%", "Motivo", "%", "Motivo"])  
+
+    
+    df3 = pd.DataFrame(dataReclameAqui, columns=["Nome do Local", "Nota Geral", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota 6 Meses", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota 12 Meses", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota Ano -1", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "Nota Ano -2", "% Respondidas", "% Volta Negócio", "Índice Solução", "# Reclamações", "1 - %", "1 - Motivo", "2 - %", "2 - Motivo", "3 - %", "3 - Motivo"])  
 
     dataReclameAqui={ 
         "Nome do Local":[str(x["nomeLocal"]) for x in reviewsReclameAqui], 
