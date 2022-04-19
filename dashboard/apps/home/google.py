@@ -61,7 +61,7 @@ class Google():
 		chrome_options.add_argument("--no-sandbox")
 		chrome_options.add_argument("--disable-dev-shm-usage")
 		chrome_options.add_argument('--kiosk-printing')
-		chrome_options.add_argument("--headless")
+		# chrome_options.add_argument("--headless")
 
 		chrome_options.page_load_strategy = 'normal'
 
